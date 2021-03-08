@@ -1,108 +1,165 @@
 import React, { useRef, useState, Suspense } from "react";
-import * as THREE from "three";
-
 import { Canvas, useFrame, useLoader, useThree, extend } from "react-three-fiber";
-//import { softShadows, MeshWobbleMaterial, OrbitControls } from "drei";
-import { softShadows, MeshWobbleMaterial } from "drei";
-
+import { softShadows } from "drei";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
-import { TextureLoader, MeshStandardMaterial } from "three";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-
 import "./App.scss";
-import { useSpring, a } from "react-spring/three";
-
-//"homepage": "http://https://robertasliekis.github.io/3d-floors/",
 
 extend({ OrbitControls });
 
 softShadows();
 
-const SpinningMesh = ({ position, color, speed, args }) => {
-  const mesh = useRef();
-
-  const material = new THREE.MeshStandardMaterial({
-    color: "yellow"
-  });
-  const [expand, setExpand] = useState(false);
-
-  const props = useSpring({
-    scale: expand ? [1.4, 1.4, 1.4] : [1, 1, 1]
-  });
-
-  return (
-    <a.mesh
-      position={position}
-      ref={mesh}
-      onClick={() => {
-        setExpand(!expand);
-      }}
-      scale={props.scale}
-      material={material}
-      castShadow
-    >
-      <boxBufferGeometry attach="geometry" args={args} />
-    </a.mesh>
-  );
-};
+//"homepage": "http://https://robertasliekis.github.io/3d-floors/",
 
 const Floor = () => {
-  const [colors, setColors] = useState([false, false, false, false]);
+  const ref = useRef();
+  const floorRefs = useRef(new Array());
+  const materialRefs = useRef(new Array());
 
-  const changeColor = (index) => {
-    let currentColors = [...colors];
-    currentColors[index] = !currentColors[index];
-    setColors(currentColors);
+  useFrame((state) => {
+    //   const t = state.clock.getElapsedTime();
+    const animationSpeed = 1;
+    if (clickedFloor !== null) {
+      //  floorRefs.current[clickedFloor].position.y += 1;
+      floorRefs.current.forEach((ref, index) => {
+        let indexDifference = Math.abs(clickedFloor - index);
+        if (clickedFloor !== index) {
+          //  materialRefs.current[index].opacity -= 0.02;
+          if (clickedFloor < index) {
+            if (ref.position.y < index * 10 + indexDifference * 20) {
+              ref.position.y += animationSpeed;
+            }
+          } else {
+            if (ref.position.y > index * 10 - indexDifference * 20) {
+              ref.position.y -= animationSpeed;
+            }
+          }
+        } else {
+          if (ref.position.y < index * 10) {
+            ref.position.y += animationSpeed;
+          }
+        }
+      });
+    } else {
+      floorRefs.current.forEach((ref, index) => {
+        if (ref.position.y > index * 10) {
+          //   materialRefs.current[index].opacity += 0.1;
+          ref.position.y -= animationSpeed;
+        } else if (ref.position.y < index * 10) {
+          //  materialRefs.current[index].opacity += 0.1;
+          ref.position.y += animationSpeed;
+        }
+      });
+    }
+    // if (positionZ && ref.current.position.y < 50) {
+    //     ref.current.position.y += 1;
+    // }
+    // if (!positionZ && ref.current.position.y > 10) {
+    //       ref.current.position.y -= 1;
+    // }
+  });
+
+  const [colors, setColors] = useState(false);
+  const [positionZ, setPositionZ] = useState(false);
+  const [colors2, setColors2] = useState(false);
+
+  const [hovered, setHovered] = useState([false, false, false, false, false]);
+  const [clickedFloor, setClickedFloor] = useState(null);
+
+  const changeColor = () => {
+    let currentColors = colors;
+    setColors(!currentColors);
   };
   const { nodes } = useLoader(GLTFLoader, "./models/floor01.glb");
-  // console.log(nodes);
+
+  const hoveredOnFloor = (index, mouseInside) => {
+    if (clickedFloor === null) {
+      let hoveredArray = [...hovered];
+      if (mouseInside) {
+        hoveredArray[index] = true;
+      } else {
+        hoveredArray[index] = false;
+      }
+      setHovered(hoveredArray);
+    } else {
+      setHovered([false, false, false, false, false]);
+    }
+  };
+
+  const clickedOnFloor = (index) => {
+    if (clickedFloor === null) {
+      setClickedFloor(index);
+    } else if (clickedFloor === index) {
+      setClickedFloor(null);
+    }
+    // if (clickedFloor !== index) {
+    //   setClickedFloor(index);
+    // } else {
+    //   setClickedFloor(null);
+    // }
+  };
+
+  const floorObjects = [0, 1, 2, 3, 4];
+
   return (
-    <group key={colors}>
-      {console.log("gera")}
-      <mesh geometry={nodes.floor1_1.geometry} onClick={() => changeColor(0)} rotation={[1.5, 0, 0]} position={[0, 10, 0]}>
-        <meshStandardMaterial attach="material" color={colors[0] ? "yellow" : "white"} />
+    <group>
+      {floorObjects.map((floorObject, index) => (
+        <mesh
+          className={`floor floor${index}`}
+          key={index}
+          ref={(e) => (floorRefs.current[index] = e)}
+          dispose={null}
+          onPointerOver={(e) => (e.stopPropagation(), hoveredOnFloor(index, true))}
+          onPointerOut={(e) => e.intersections.length && hoveredOnFloor(index, false)}
+          onClick={(e) => (e.stopPropagation(), clickedOnFloor(index))}
+          geometry={nodes.floor1_1.geometry}
+          opacity={0.5}
+          rotation={[1.5, 0, 0]}
+          position={[0, 10 * index, 0]}
+        >
+          <meshStandardMaterial
+            attach="material"
+            ref={(e) => (materialRefs.current[index] = e)}
+            // opacity={1}
+            transparent={true}
+            color={hovered[index] ? "yellow" : "white"}
+          />
+        </mesh>
+      ))}
+      {/* <mesh
+        ref={ref}
+        dispose={null}
+        onPointerOver={(e) => (e.stopPropagation(), mouseHoveredOnFloor(0))}
+        onPointerOut={(e) => e.intersections.length && mouseHoveredOnFloor(0)}
+        onClick={(e) => e.intersections.length && setPositionZ(!positionZ)}
+        geometry={nodes.floor1_1.geometry}
+        rotation={[1.5, 0, 0]}
+        position={[0, 10, 0]}
+      >
+        <meshStandardMaterial attach="material" color={hovered[0] ? "yellow" : "white"} />
       </mesh>
-      <mesh geometry={nodes.floor1_1.geometry} onClick={() => changeColor(1)} rotation={[1.5, 0, 0]} position={[0, 0, 0]}>
-        <meshStandardMaterial attach="material" color={colors[1] ? "yellow" : "white"} />
-      </mesh>
-      <mesh geometry={nodes.floor1_1.geometry} onClick={() => changeColor(2)} rotation={[1.5, 0, 0]} position={[0, -10, 0]}>
-        <meshStandardMaterial attach="material" color={colors[2] ? "yellow" : "white"} />
-      </mesh>
-      <mesh geometry={nodes.floor1_1.geometry} onClick={() => changeColor(3)} rotation={[1.5, 0, 0]} position={[0, -20, 0]}>
-        <meshStandardMaterial attach="material" color={colors[3] ? "yellow" : "white"} />
-      </mesh>
+      <mesh
+        onPointerOver={(e) => (e.stopPropagation(), mouseHoveredOnFloor(1))}
+        onPointerOut={(e) => e.intersections.length && mouseHoveredOnFloor(1)}
+        geometry={nodes.floor1_1.geometry}
+        // onClick={() => changeColor()}
+        rotation={[1.5, 0, 0]}
+        position={[0, 0, 0]}
+      >
+        <meshStandardMaterial attach="material" color={hovered[1] ? "blue" : "white"} />
+      </mesh> */}
     </group>
   );
 };
 
 const CameraControls = () => {
-  // Get a reference to the Three.js Camera, and the canvas html element.
-  // We need these to setup the OrbitControls class.
-  // https://threejs.org/docs/#examples/en/controls/OrbitControls
-
   const {
     camera,
     gl: { domElement }
   } = useThree();
-
-  // Ref to the controls, so that we can update them on every frame using useFrame
   const controls = useRef();
   useFrame((state) => controls.current.update());
-  return (
-    <orbitControls
-      ref={controls}
-      args={[camera, domElement]}
-      minDistance={120}
-      // maxDistance={20}
-      // enableZoom={false}
-      // maxAzimuthAngle={Math.PI / 4}
-      // maxPolarAngle={Math.PI}
-      //   minAzimuthAngle={-Math.PI / 4}
-      // minPolarAngle={0}
-    />
-  );
+  return <orbitControls ref={controls} args={[camera, domElement]} minDistance={150} />;
 };
 
 const App = () => {
@@ -111,34 +168,12 @@ const App = () => {
       <Canvas colorManagement shadowMap camera={{ position: [-5, 2, 10], fov: 60 }}>
         <CameraControls />
         <ambientLight intensity={0.3} />
-        <directionalLight
-          castShadow
-          position={[0, 10, 0]}
-          intensity={1.5}
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-          shadow-camera-far={50}
-          shadow-camera-left={-10}
-          shadow-camera-right={10}
-          shadow-camera-top={10}
-          shadow-camera-bottom={-10}
-        />
         <pointLight position={[-10, 0, -20]} intensity={0.5} />
-        <pointLight position={[0, -10, 0]} intensity={1.5} />
         <group>
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
-            <planeBufferGeometry attach="geometry" args={[100, 100]} color="yellow" />
-            <shadowMaterial attach="material" opacity={0.3} />
-          </mesh>
-          {/* <SpinningMesh position={[0, 1, 0]} color="lightblue" args={[3, 2, 1]} speed={2} />
-          <SpinningMesh position={[-2, 1, -5]} color="pink" speed={6} />
-          <SpinningMesh position={[5, 1, -2]} color="pink" speed={6} /> */}
-
           <Suspense fallback={null}>
             <Floor />
           </Suspense>
         </group>
-        {/* <OrbitControls camera={[100, 200, 0]} /> */}
       </Canvas>
     </>
   );
