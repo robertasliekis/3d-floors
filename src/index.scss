@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
 html,
 body {
   width: 100%;
@@ -9,15 +10,13 @@ body {
 }
 
 div {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .website-wrapper {
   width: 100%;
   height: 100vh;
-  background: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#b1b1b1));
-  background: linear-gradient(180deg, #f8f8f8 0%, #b1b1b1 100%);
+  background: linear-gradient(180deg, rgb(248, 248, 248) 0%, rgb(177, 177, 177) 100%);
   position: relative;
   overflow: hidden;
 }
@@ -32,7 +31,6 @@ div {
 .info-container {
   padding: 40px;
   position: absolute;
-  -webkit-transition: 0.5s all linear;
   transition: 0.5s all linear;
   top: 0;
   right: 0;
@@ -40,9 +38,7 @@ div {
   width: 500px;
   height: 100%;
   background-color: white;
+  p {
+    text-align: justify;
+  }
 }
-
-.info-container p {
-  text-align: justify;
-}
-/*# sourceMappingURL=index.css.map */
