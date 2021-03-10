@@ -3,25 +3,32 @@ import { useFrame, useLoader } from "react-three-fiber";
 
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
-const FloorsModel = ({ clickedFloor, onClickedFloorChange }) => {
-  const floorRefs = useRef(new Array());
-  const materialRefs = useRef(new Array());
+const FloorsModel = ({ clickedFloor, clickedRoom, clickCount, onClickedFloorChange, onClickedRoomChange }) => {
+  const buildingRef = useRef();
+  const floorRefs = useRef([]);
+  const materialRefs = useRef([]);
+  const roomRefs = useRef([[], [], [], [], []]);
+  const sideRefs = useRef([]);
 
   useFrame(() => {
     //   const t = state.clock.getElapsedTime();
-    const animationSpeed = 1;
+    const animationSpeed = 2;
+    buildingRef.current.rotation.y += 0.001;
     if (clickedFloor !== null) {
-      //  floorRefs.current[clickedFloor].position.y += 1;
       floorRefs.current.forEach((ref, index) => {
         let indexDifference = Math.abs(clickedFloor - index);
         if (clickedFloor !== index) {
           materialRefs.current[index].opacity = 0.2;
+          sideRefs.current[index].opacity = 0.2;
+          roomRefs.current[index].forEach((roomRef) => {
+            roomRef.opacity = 0.2;
+          });
           if (clickedFloor < index) {
-            if (ref.position.y < index * 10 + indexDifference * 20) {
+            if (ref.position.y < index * 10 + indexDifference * 30) {
               ref.position.y += animationSpeed;
             }
           } else {
-            if (ref.position.y > index * 10 - indexDifference * 20) {
+            if (ref.position.y > index * 10 - indexDifference * 30) {
               ref.position.y -= animationSpeed;
             }
           }
@@ -31,14 +38,19 @@ const FloorsModel = ({ clickedFloor, onClickedFloorChange }) => {
           }
         }
       });
-    } else {
+    } else if (clickCount !== 0) {
       floorRefs.current.forEach((ref, index) => {
+        roomRefs.current[index].forEach((roomRef) => {
+          roomRef.opacity = 1;
+        });
         if (ref.position.y > index * 10) {
           materialRefs.current[index].opacity = 1;
+          sideRefs.current[index].opacity = 1;
           //   materialRefs.current[index].opacity += 0.1;
           ref.position.y -= animationSpeed;
         } else if (ref.position.y < index * 10) {
           materialRefs.current[index].opacity = 1;
+          sideRefs.current[index].opacity = 1;
           //  materialRefs.current[index].opacity += 0.1;
           ref.position.y += animationSpeed;
         }
@@ -46,62 +58,134 @@ const FloorsModel = ({ clickedFloor, onClickedFloorChange }) => {
     }
   });
 
-  const [colors, setColors] = useState(false);
-  const [hovered, setHovered] = useState([false, false, false, false, false]);
+  const [hoveredFloor, setHoveredFloor] = useState(null);
+  const [hoveredRoom, setHoveredRoom] = useState(null);
 
-  const changeColor = () => {
-    let currentColors = colors;
-    setColors(!currentColors);
-  };
   const { nodes } = useLoader(GLTFLoader, "./models/floor01.glb");
+
+  const floorRooms = [
+    nodes.floor_room_0_1,
+    nodes.floor_room_1_1,
+    nodes.floor_room_2_1,
+    nodes.floor_room_3_1,
+    nodes.floor_room_4_1,
+    nodes.floor_room_5_1
+  ];
 
   const hoveredOnFloor = (index, mouseInside) => {
     if (clickedFloor === null) {
-      let hoveredArray = [...hovered];
       if (mouseInside) {
-        hoveredArray[index] = true;
-      } else {
-        hoveredArray[index] = false;
+        setHoveredFloor(index);
+      } else if (hoveredFloor === index) {
+        setHoveredFloor(null);
       }
-      setHovered(hoveredArray);
     } else {
-      setHovered([false, false, false, false, false]);
+      setHoveredFloor(null);
     }
   };
 
   const clickedOnFloor = (index) => {
     if (clickedFloor === null) {
       onClickedFloorChange(index);
-    } else if (clickedFloor === index) {
-      onClickedFloorChange(null);
+      setHoveredFloor([false, false, false, false, false]);
+    }
+    // else if (clickedFloor === index) {
+    //   onClickedFloorChange(null);
+    // }
+  };
+
+  const clickedOnRoom = (index, event) => {
+    if (clickedFloor !== null) {
+      event.stopPropagation();
+      onClickedRoomChange(index);
     }
   };
 
-  const floorObjects = [0, 1, 2, 3, 4];
+  const hoveredOnRoom = (floorIndex, roomIndex, mouseInside, event) => {
+    if (clickedFloor !== null && clickedFloor === floorIndex) {
+      event.stopPropagation();
 
+      if (mouseInside) {
+        setHoveredRoom(roomIndex);
+      } else if (hoveredRoom === roomIndex) {
+        setHoveredRoom(null);
+      }
+    }
+  };
+
+  const convertDegreesToRadians = (x, y, z) => {
+    let degrees = [x, y, z];
+    return (degrees = degrees.map((degree) => degree * (Math.PI / 180)));
+  };
+
+  const floorObjects = [0, 1, 2, 3, 4];
   return (
-    <group>
-      {floorObjects.map((floorObject, index) => (
-        <mesh
-          className={`floor floor${index}`}
-          key={index}
-          ref={(e) => (floorRefs.current[index] = e)}
-          dispose={null}
-          onPointerOver={(e) => (e.stopPropagation(), hoveredOnFloor(index, true))}
-          onPointerOut={(e) => e.intersections.length && hoveredOnFloor(index, false)}
-          onClick={(e) => (e.stopPropagation(), clickedOnFloor(index))}
-          geometry={nodes.floor1_1.geometry}
-          opacity={0.5}
-          rotation={[1.5, 0, 0]}
-          position={[0, 10 * index, 0]}
+    <group ref={buildingRef}>
+      {floorObjects.map((floorObject, floorIndex) => (
+        <group
+          key={floorIndex}
+          ref={(e) => (floorRefs.current[floorIndex] = e)}
+          position={[0, 10 * floorIndex, 0]}
+          rotation={convertDegreesToRadians(90, 180, 0)}
         >
-          <meshStandardMaterial
-            attach="material"
-            ref={(e) => (materialRefs.current[index] = e)}
-            transparent={true}
-            color={hovered[index] ? "red" : "white"}
-          />
-        </mesh>
+          <mesh
+            dispose={null}
+            onPointerOver={(e) => {
+              e.stopPropagation();
+              hoveredOnFloor(floorIndex, true);
+            }}
+            onPointerOut={(e) => {
+              e.intersections.length && hoveredOnFloor(floorIndex, false);
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              clickedOnFloor(floorIndex);
+            }}
+            geometry={nodes.floor_top_1.geometry}
+          >
+            <meshStandardMaterial
+              attach="material"
+              ref={(e) => (materialRefs.current[floorIndex] = e)}
+              transparent={true}
+              color={"white"}
+            />
+          </mesh>
+          <mesh geometry={nodes.floor_side_1.geometry}>
+            <meshStandardMaterial
+              attach="material"
+              ref={(e) => (sideRefs.current[floorIndex] = e)}
+              transparent={true}
+              color={hoveredFloor === floorIndex ? "#00FBFF" : "grey"}
+            />
+          </mesh>
+          {floorRooms.map((floorRoom, roomIndex) => (
+            <group key={roomIndex}>
+              <mesh
+                geometry={floorRoom.geometry}
+                onPointerOver={(e) => {
+                  hoveredOnRoom(floorIndex, roomIndex, true, e);
+                }}
+                onPointerOut={(e) => {
+                  hoveredOnRoom(floorIndex, roomIndex, false, e);
+                }}
+                onClick={(e) => {
+                  clickedOnRoom(roomIndex, e);
+                }}
+              >
+                <meshStandardMaterial
+                  attach="material"
+                  ref={(e) => (roomRefs.current[floorIndex][roomIndex] = e)}
+                  transparent={true}
+                  color={
+                    (clickedFloor === floorIndex && hoveredRoom === roomIndex) || (clickedFloor === floorIndex && clickedRoom === roomIndex)
+                      ? "yellow"
+                      : "#E3E3E3"
+                  }
+                />
+              </mesh>
+            </group>
+          ))}
+        </group>
       ))}
     </group>
   );

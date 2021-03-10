@@ -1,6 +1,6 @@
 import React, { useRef, useState, Suspense } from "react";
 import { connect } from "react-redux";
-import { setClickedFloor } from "../actions";
+import { setClickedFloor, setClickedRoom } from "../actions";
 import { Canvas, useFrame, useThree, extend } from "react-three-fiber";
 import { softShadows } from "drei";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -22,19 +22,28 @@ const CameraControls = () => {
   return <orbitControls ref={controls} args={[camera, domElement]} minDistance={150} />;
 };
 
-function FloorsScene({ clickedFloor, setClickedFloor }) {
+function FloorsScene({ clickedFloor, clickedRoom, clickCount, setClickedFloor, setClickedRoom }) {
   const clickedFloorChange = (index) => {
     setClickedFloor(index);
   };
+  const clickedRoomChange = (index) => {
+    setClickedRoom(index);
+  };
   return (
     <div className="floor-model-container">
-      <Canvas colorManagement shadowMap camera={{ position: [-5, 2, 10], fov: 60 }}>
+      <Canvas colorManagement shadowMap camera={{ position: [10, 15, -20], fov: 60 }}>
         <CameraControls />
-        <ambientLight intensity={0.3} />
-        <pointLight position={[-10, 0, -20]} intensity={0.5} />
+        <ambientLight intensity={0.6} />
+        <pointLight position={[-10, 100, -20]} intensity={0.5} />
         <group>
           <Suspense fallback={null}>
-            <FloorsModel onClickedFloorChange={clickedFloorChange} clickedFloor={clickedFloor} />
+            <FloorsModel
+              onClickedFloorChange={clickedFloorChange}
+              onClickedRoomChange={clickedRoomChange}
+              clickedFloor={clickedFloor}
+              clickedRoom={clickedRoom}
+              clickCount={clickCount}
+            />
           </Suspense>
         </group>
       </Canvas>
@@ -44,12 +53,15 @@ function FloorsScene({ clickedFloor, setClickedFloor }) {
 
 const mapStateToProps = (state) => {
   return {
-    clickedFloor: state.setClickedFloor.clickedFloor
+    clickedFloor: state.setClickedFloor.clickedFloor,
+    clickedRoom: state.setClickedRoom.clickedRoom,
+    clickCount: state.setClickedFloor.clickCount
   };
 };
 
 const mapDispatchToProps = {
-  setClickedFloor
+  setClickedFloor,
+  setClickedRoom
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FloorsScene);

@@ -13,10 +13,58 @@ div {
   box-sizing: border-box;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
+}
+
+div {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@mixin displayFlex {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  align-items: center;
+}
+
+@mixin displayFlexBetween {
+  @include displayFlex();
+  justify-content: space-between;
+}
+
+@mixin displayFlexColumn {
+  @include displayFlex();
+  flex-direction: column;
+}
+
+@mixin positionAbsoluteCenter {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+}
+
+.btn {
+  cursor: pointer;
+}
+
 .website-wrapper {
   width: 100%;
   height: 100vh;
-  background: linear-gradient(180deg, rgb(248, 248, 248) 0%, rgb(177, 177, 177) 100%);
+  background: linear-gradient(180deg, rgb(248, 248, 248) 0%, rgb(182, 167, 145) 100%);
   position: relative;
   overflow: hidden;
 }
@@ -28,17 +76,38 @@ div {
   height: 100%;
 }
 
-.info-container {
-  padding: 40px;
+.info-window {
+  padding: 30px;
+  transform: translate(0, -50%);
   position: absolute;
   transition: 0.5s all linear;
-  top: 0;
+  top: 50%;
   right: 0;
   z-index: 2;
-  width: 500px;
-  height: 100%;
-  background-color: white;
+  width: 400px;
+  height: calc(100% - 60px);
+  background-color: rgba($color: #ffffff, $alpha: 0.8);
+  border-radius: 30px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  .btn-close {
+    top: 30px;
+    right: 30px;
+    position: absolute;
+    @include displayFlex();
+    width: 40px;
+    height: 40px;
+    font-size: 40px;
+  }
+  h1 {
+    margin-top: 30px;
+  }
   p {
     text-align: justify;
+  }
+  .container {
+    width: 100%;
+    @include displayFlexColumn();
+    align-items: flex-start;
   }
 }
