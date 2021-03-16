@@ -1,76 +1,65 @@
 import React, { useRef, useState } from "react";
-import { useFrame, useLoader } from "react-three-fiber";
+import { useFrame } from "react-three-fiber";
 
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import LoadFloorModel from "../functions/LoadFloorModel";
 
-const FloorsModel = ({ clickedFloor, clickedRoom, clickCount, onClickedFloorChange, onClickedRoomChange }) => {
+const FloorsModel = ({ clickedFloor, clickedRoom, onClickedFloorChange, onClickedRoomChange }) => {
+  const [floorBaseMesh, floorSideMesh, floorsRoomsMeshes] = LoadFloorModel();
+
   const buildingRef = useRef();
   const floorRefs = useRef([]);
   const materialRefs = useRef([]);
   const roomRefs = useRef([[], [], [], [], []]);
   const sideRefs = useRef([]);
+  const floorDistance = 10;
 
   useFrame(() => {
-    //   const t = state.clock.getElapsedTime();
+    const setMeshOpacity = (opacity, index) => {
+      materialRefs.current[index].opacity = opacity;
+      sideRefs.current[index].opacity = opacity;
+      roomRefs.current[index].forEach((roomRef) => {
+        roomRef.opacity = opacity;
+      });
+    };
+
+    const setMeshPosition = (meshRef, floorIndex, indexDifference) => {
+      let floorGap = 0;
+      if (indexDifference !== undefined) {
+        floorGap = indexDifference * 30;
+      }
+      let floorPosition = floorIndex * floorDistance - floorGap;
+
+      if (meshRef.position.y > floorPosition) {
+        if (indexDifference > 0 || indexDifference === undefined) {
+          meshRef.position.y -= animationSpeed;
+        }
+      } else if (meshRef.position.y < floorPosition) {
+        if (indexDifference < 0 || indexDifference === undefined) {
+          meshRef.position.y += animationSpeed;
+        }
+      }
+    };
+
     const animationSpeed = 2;
     buildingRef.current.rotation.y += 0.001;
-    if (clickedFloor !== null) {
-      floorRefs.current.forEach((ref, index) => {
-        let indexDifference = Math.abs(clickedFloor - index);
+    floorRefs.current.forEach((ref, index) => {
+      let meshOpacity = 1;
+      if (clickedFloor !== null) {
+        let indexDifference = clickedFloor - index;
+        meshOpacity = 0.2;
         if (clickedFloor !== index) {
-          materialRefs.current[index].opacity = 0.2;
-          sideRefs.current[index].opacity = 0.2;
-          roomRefs.current[index].forEach((roomRef) => {
-            roomRef.opacity = 0.2;
-          });
-          if (clickedFloor < index) {
-            if (ref.position.y < index * 10 + indexDifference * 30) {
-              ref.position.y += animationSpeed;
-            }
-          } else {
-            if (ref.position.y > index * 10 - indexDifference * 30) {
-              ref.position.y -= animationSpeed;
-            }
-          }
-        } else {
-          if (ref.position.y < index * 10) {
-            ref.position.y += animationSpeed;
-          }
+          setMeshOpacity(meshOpacity, index);
         }
-      });
-    } else if (clickCount !== 0) {
-      floorRefs.current.forEach((ref, index) => {
-        roomRefs.current[index].forEach((roomRef) => {
-          roomRef.opacity = 1;
-        });
-        if (ref.position.y > index * 10) {
-          materialRefs.current[index].opacity = 1;
-          sideRefs.current[index].opacity = 1;
-          //   materialRefs.current[index].opacity += 0.1;
-          ref.position.y -= animationSpeed;
-        } else if (ref.position.y < index * 10) {
-          materialRefs.current[index].opacity = 1;
-          sideRefs.current[index].opacity = 1;
-          //  materialRefs.current[index].opacity += 0.1;
-          ref.position.y += animationSpeed;
-        }
-      });
-    }
+        setMeshPosition(ref, index, indexDifference);
+      } else {
+        setMeshOpacity(meshOpacity, index);
+        setMeshPosition(ref, index);
+      }
+    });
   });
 
   const [hoveredFloor, setHoveredFloor] = useState(null);
   const [hoveredRoom, setHoveredRoom] = useState(null);
-
-  const { nodes } = useLoader(GLTFLoader, "./models/floor01.glb");
-
-  const floorRooms = [
-    nodes.floor_room_0_1,
-    nodes.floor_room_1_1,
-    nodes.floor_room_2_1,
-    nodes.floor_room_3_1,
-    nodes.floor_room_4_1,
-    nodes.floor_room_5_1
-  ];
 
   const hoveredOnFloor = (index, mouseInside) => {
     if (clickedFloor === null) {
@@ -87,11 +76,7 @@ const FloorsModel = ({ clickedFloor, clickedRoom, clickCount, onClickedFloorChan
   const clickedOnFloor = (index) => {
     if (clickedFloor === null) {
       onClickedFloorChange(index);
-      setHoveredFloor([false, false, false, false, false]);
     }
-    // else if (clickedFloor === index) {
-    //   onClickedFloorChange(null);
-    // }
   };
 
   const clickedOnRoom = (index, event) => {
@@ -104,7 +89,6 @@ const FloorsModel = ({ clickedFloor, clickedRoom, clickCount, onClickedFloorChan
   const hoveredOnRoom = (floorIndex, roomIndex, mouseInside, event) => {
     if (clickedFloor !== null && clickedFloor === floorIndex) {
       event.stopPropagation();
-
       if (mouseInside) {
         setHoveredRoom(roomIndex);
       } else if (hoveredRoom === roomIndex) {
@@ -118,16 +102,11 @@ const FloorsModel = ({ clickedFloor, clickedRoom, clickCount, onClickedFloorChan
     return (degrees = degrees.map((degree) => degree * (Math.PI / 180)));
   };
 
-  const floorObjects = [0, 1, 2, 3, 4];
+  const floorObjects = Array(5).fill(0);
   return (
-    <group ref={buildingRef}>
+    <group ref={buildingRef} position={[0, -20, 0]}>
       {floorObjects.map((floorObject, floorIndex) => (
-        <group
-          key={floorIndex}
-          ref={(e) => (floorRefs.current[floorIndex] = e)}
-          position={[0, 10 * floorIndex, 0]}
-          rotation={convertDegreesToRadians(90, 180, 0)}
-        >
+        <group key={floorIndex} ref={(e) => (floorRefs.current[floorIndex] = e)} rotation={convertDegreesToRadians(90, 180, 0)}>
           <mesh
             dispose={null}
             onPointerOver={(e) => {
@@ -141,7 +120,7 @@ const FloorsModel = ({ clickedFloor, clickedRoom, clickCount, onClickedFloorChan
               e.stopPropagation();
               clickedOnFloor(floorIndex);
             }}
-            geometry={nodes.floor_top_1.geometry}
+            geometry={floorBaseMesh}
           >
             <meshStandardMaterial
               attach="material"
@@ -150,7 +129,7 @@ const FloorsModel = ({ clickedFloor, clickedRoom, clickCount, onClickedFloorChan
               color={"white"}
             />
           </mesh>
-          <mesh geometry={nodes.floor_side_1.geometry}>
+          <mesh geometry={floorSideMesh}>
             <meshStandardMaterial
               attach="material"
               ref={(e) => (sideRefs.current[floorIndex] = e)}
@@ -158,10 +137,10 @@ const FloorsModel = ({ clickedFloor, clickedRoom, clickCount, onClickedFloorChan
               color={hoveredFloor === floorIndex ? "#00FBFF" : "grey"}
             />
           </mesh>
-          {floorRooms.map((floorRoom, roomIndex) => (
+          {floorsRoomsMeshes[floorIndex].map((floorRoom, roomIndex) => (
             <group key={roomIndex}>
               <mesh
-                geometry={floorRoom.geometry}
+                geometry={floorRoom}
                 onPointerOver={(e) => {
                   hoveredOnRoom(floorIndex, roomIndex, true, e);
                 }}

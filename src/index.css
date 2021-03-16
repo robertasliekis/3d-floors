@@ -45,7 +45,7 @@ div {
   overflow: hidden;
 }
 
-.floor-model-container {
+.floor-scene-container {
   position: absolute;
   z-index: 1;
   width: 100%;
@@ -53,26 +53,27 @@ div {
 }
 
 .info-window {
-  padding: 30px;
   -webkit-transform: translate(0, -50%);
           transform: translate(0, -50%);
   position: absolute;
-  -webkit-transition: 0.5s all linear;
-  transition: 0.5s all linear;
   top: 50%;
-  right: 0;
+  right: 0%;
   z-index: 2;
-  width: 400px;
+  width: 0px;
   height: calc(100% - 60px);
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 30px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
 }
 
-.info-window .btn-close {
-  top: 30px;
-  right: 30px;
+.info-window .floor-container {
+  height: 150px;
+}
+
+.info-window .floor-container .text-container h1:nth-child(1) {
+  margin-bottom: 10px;
+}
+
+.info-window .floor-container .btn-close {
+  top: 20px;
+  right: 20px;
   position: absolute;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -92,16 +93,25 @@ div {
   font-size: 40px;
 }
 
-.info-window h1 {
-  margin-top: 30px;
-}
-
-.info-window p {
-  text-align: justify;
+.info-window .room-container {
+  top: 160px;
 }
 
 .info-window .container {
+  position: absolute;
+  padding: 30px;
+  width: 600px;
+  background-color: white;
+  border-radius: 30px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  -webkit-transition: 0.5s all linear;
+  transition: 0.5s all linear;
+}
+
+.info-window .container .text-container {
   width: 100%;
+  height: 100%;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -117,8 +127,19 @@ div {
           align-items: center;
   -ms-flex-direction: column;
       flex-direction: column;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
   -webkit-box-align: start;
       -ms-flex-align: start;
           align-items: flex-start;
+}
+
+.info-window .container .text-container h1 {
+  font-size: 28px;
+}
+
+.info-window .container .text-container p {
+  text-align: justify;
 }
 /*# sourceMappingURL=index.css.map */

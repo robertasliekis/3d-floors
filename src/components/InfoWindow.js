@@ -1,46 +1,53 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
+import { setClickedFloor, setClickedRoom } from "../actions";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
-import { setClickedFloor, setClickedRoom } from "../actions";
+import floorsData from "../data/floorsData";
 
 function InfoWindow({ clickedFloor, clickedRoom, setClickedFloor, setClickedRoom }) {
-  const floorText = [
-    "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta.",
-    "Impedit, veniam dignissimos odit repudiandae iste id fugiat tenetur necessitatibus amet aspernatur voluptas dolorem deserunt dolores, reprehenderit minima! Asperiores,  praesentium delectus optio perspiciatis quae est ea.",
-    "Sit, amet consectetur adipisicing elit. Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta.",
-    "Dolor sit, amet consectetur adipisicing elit. Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta.",
-    "Adipisicing elit. Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta."
-  ];
-  const roomText = [
-    "Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta.",
-    "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta.",
-    "Impedit, veniam dignissimos odit repudiandae iste id fugiat tenetur necessitatibus amet aspernatur voluptas dolorem deserunt dolores, reprehenderit minima! Asperiores,  praesentium delectus optio perspiciatis quae est ea.",
-    "Sit, amet consectetur adipisicing elit. Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta.",
-    "Dolor sit, amet consectetur adipisicing elit. Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta.",
-    "Adipisicing elit. Ipsa explicabo, alias a eum cumque vel praesentium dolores consequuntur debitis blanditiis perferendis tempore tenetur qui. Esse odio aperiam rerum reiciendis soluta."
-  ];
+  const [floorText, setFloorText] = useState("");
+  const [roomText, setRoomText] = useState({ name: "", description: "" });
+
+  useEffect(() => {
+    if (clickedFloor !== null) {
+      setFloorText(floorsData[clickedFloor].description);
+    }
+    if (clickedRoom !== null) {
+      setRoomText(floorsData[clickedFloor].rooms[clickedRoom]);
+    }
+  }, [clickedFloor, clickedRoom]);
 
   return (
-    <div className="info-window" style={{ right: clickedFloor !== null ? "0%" : "-100%" }}>
+    <div className="info-window">
       <div
-        className="btn btn-close"
-        onClick={() => {
-          setClickedFloor(null);
-          setClickedRoom(null);
-        }}
+        className="floor-container container"
+        style={{ transform: clickedFloor !== null ? "translate(-100%, 0)" : "translate(0, 0)", opacity: clickedFloor !== null ? 1 : 0 }}
       >
-        <FontAwesomeIcon icon={faTimes} className="icon" />
+        <div className="text-container">
+          <h1>{`Floor ${clickedFloor + 1}:`}</h1>
+          <h1>{`${floorText}`}</h1>
+        </div>
+        <div
+          className="btn btn-close"
+          onClick={() => {
+            setClickedFloor(null);
+            setClickedRoom(null);
+          }}
+        >
+          <FontAwesomeIcon icon={faTimes} className="icon" />
+        </div>
       </div>
-      <div className="floor-container container">
-        <h1>{`Floor ${clickedFloor + 1}`}</h1>
-        <p>{floorText[clickedFloor]}</p>
-      </div>
-      <div className="room-container container" style={{ display: clickedRoom !== null ? "flex" : "none" }}>
-        <h1>{`Room ${clickedRoom + 1}`}</h1>
-        <p>{roomText[clickedRoom]}</p>
+      <div
+        className="room-container container"
+        style={{ transform: clickedRoom !== null ? "translate(-100%, 0)" : "translate(0, 0)", opacity: clickedRoom !== null ? 1 : 0 }}
+      >
+        <div className="text-container">
+          <h1>{roomText.name}</h1>
+          <p>{roomText.description}</p>
+        </div>
       </div>
     </div>
   );

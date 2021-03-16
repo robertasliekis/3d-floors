@@ -1,12 +1,11 @@
 const initialState = {
-  clickedFloor: null,
-  clickCount: 0
+  clickedFloor: null
 };
 
 const setClickedFloor = (state = initialState, action) => {
   switch (action.type) {
     case "SET_CLICKED_FLOOR":
-      return { ...state, clickedFloor: action.payload, clickCount: state.clickCount + 1 };
+      return { ...state, clickedFloor: action.payload };
     default:
       return state;
   }
