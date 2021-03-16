@@ -3,7 +3,7 @@ import { useFrame } from "react-three-fiber";
 
 import LoadFloorModel from "../functions/LoadFloorModel";
 
-const FloorsModel = ({ clickedFloor, clickedRoom, onClickedFloorChange, onClickedRoomChange }) => {
+const FloorsModel = ({ windowWidth, clickedFloor, clickedRoom, onClickedFloorChange, onClickedRoomChange }) => {
   const [floorBaseMesh, floorSideMesh, floorsRoomsMeshes] = LoadFloorModel();
 
   const buildingRef = useRef();
@@ -112,6 +112,9 @@ const FloorsModel = ({ clickedFloor, clickedRoom, onClickedFloorChange, onClicke
             onPointerOver={(e) => {
               e.stopPropagation();
               hoveredOnFloor(floorIndex, true);
+              if (windowWidth <= 1024) {
+                clickedOnFloor(floorIndex);
+              }
             }}
             onPointerOut={(e) => {
               e.intersections.length && hoveredOnFloor(floorIndex, false);

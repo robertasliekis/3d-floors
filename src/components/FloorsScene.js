@@ -19,7 +19,7 @@ const CameraControls = () => {
   return <orbitControls ref={controls} args={[camera, domElement]} minDistance={150} />;
 };
 
-function FloorsScene({ clickedFloor, clickedRoom, setClickedFloor, setClickedRoom }) {
+function FloorsScene({ windowWidth, clickedFloor, clickedRoom, setClickedFloor, setClickedRoom }) {
   const clickedFloorChange = (index) => {
     setClickedFloor(index);
   };
@@ -27,7 +27,7 @@ function FloorsScene({ clickedFloor, clickedRoom, setClickedFloor, setClickedRoo
   const clickedRoomChange = (index) => {
     setClickedRoom(index);
   };
-  
+
   return (
     <div className="floor-scene-container">
       <Canvas colorManagement shadowMap camera={{ position: [160, 120, -140], fov: 30 }}>
@@ -41,6 +41,7 @@ function FloorsScene({ clickedFloor, clickedRoom, setClickedFloor, setClickedRoo
               onClickedRoomChange={clickedRoomChange}
               clickedFloor={clickedFloor}
               clickedRoom={clickedRoom}
+              windowWidth={windowWidth}
             />
           </Suspense>
         </group>
@@ -52,7 +53,8 @@ function FloorsScene({ clickedFloor, clickedRoom, setClickedFloor, setClickedRoo
 const mapStateToProps = (state) => {
   return {
     clickedFloor: state.setClickedFloor.clickedFloor,
-    clickedRoom: state.setClickedRoom.clickedRoom
+    clickedRoom: state.setClickedRoom.clickedRoom,
+    windowWidth: state.setWindowWidth.windowWidth
   };
 };
 
