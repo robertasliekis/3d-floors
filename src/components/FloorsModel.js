@@ -146,6 +146,9 @@ const FloorsModel = ({ windowWidth, clickedFloor, clickedRoom, onClickedFloorCha
                 geometry={floorRoom}
                 onPointerOver={(e) => {
                   hoveredOnRoom(floorIndex, roomIndex, true, e);
+                  if (windowWidth <= 1024) {
+                    clickedOnRoom(roomIndex, e);
+                  }
                 }}
                 onPointerOut={(e) => {
                   hoveredOnRoom(floorIndex, roomIndex, false, e);
