@@ -9,14 +9,20 @@ import FloorsModel from "./FloorsModel";
 extend({ OrbitControls });
 softShadows();
 
-const CameraControls = () => {
+const CameraControls = ({ windowWidth }) => {
   const {
     camera,
     gl: { domElement }
   } = useThree();
   const controls = useRef();
   useFrame((state) => controls.current.update());
-  return <orbitControls ref={controls} args={[camera, domElement]} minDistance={150} />;
+  let minDistance = 150;
+  let maxDistance = 350;
+  if (windowWidth < 450) {
+    minDistance = 350;
+    maxDistance = 650;
+  }
+  return <orbitControls ref={controls} args={[camera, domElement]} minDistance={minDistance} maxDistance={maxDistance} />;
 };
 
 function FloorsScene({ windowWidth, clickedFloor, clickedRoom, setClickedFloor, setClickedRoom }) {
@@ -31,7 +37,7 @@ function FloorsScene({ windowWidth, clickedFloor, clickedRoom, setClickedFloor, 
   return (
     <div className="floor-scene-container">
       <Canvas colorManagement shadowMap camera={{ position: [160, 120, -140], fov: 30 }}>
-        <CameraControls />
+        <CameraControls windowWidth={windowWidth} />
         <ambientLight intensity={0.6} />
         <pointLight position={[-10, 100, -20]} intensity={0.5} />
         <group>

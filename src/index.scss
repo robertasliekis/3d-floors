@@ -128,3 +128,32 @@ div {
     }
   }
 }
+
+@media only screen and (max-width: 450px) {
+  .info-window {
+    height: calc(100% - 20px);
+
+    .container {
+      padding: 20px;
+      width: calc(100vw - 10px);
+      border-radius: 10px;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      .text-container {
+        h1 {
+          font-size: 20px;
+        }
+        h1:nth-child(1) {
+          margin-bottom: 5px;
+        }
+      }
+    }
+    .floor-container {
+      height: 90px;
+    }
+    .room-container {
+      bottom: 0;
+      top: auto;
+    }
+  }
+}
