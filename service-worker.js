@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "//robertasliekis.github.io/3d-floors/precache-manifest.ed42eb9f1fde450c853983e5299f3266.js"
+  "//robertasliekis.github.io/3d-floors/precache-manifest.69ecbf36415a2cf2edd3a55b8bef05e0.js"
 );
 
 self.addEventListener('message', (event) => {
