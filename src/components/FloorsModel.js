@@ -80,9 +80,11 @@ const FloorsModel = ({ windowWidth, clickedFloor, clickedRoom, onClickedFloorCha
   };
 
   const clickedOnRoom = (floorIndex, roomIndex, event) => {
-    if (clickedFloor !== null && floorIndex === clickedFloor) {
-      event.stopPropagation();
-      onClickedRoomChange(roomIndex);
+    if (clickedFloor !== null) {
+      if (floorIndex === clickedFloor) {
+        event.stopPropagation();
+        onClickedRoomChange(roomIndex);
+      }
     }
   };
 
@@ -147,7 +149,7 @@ const FloorsModel = ({ windowWidth, clickedFloor, clickedRoom, onClickedFloorCha
                 onPointerOver={(e) => {
                   hoveredOnRoom(floorIndex, roomIndex, true, e);
                   if (windowWidth <= 1024) {
-                    clickedOnRoom(roomIndex, e);
+                    clickedOnRoom(floorIndex, roomIndex, e);
                   }
                 }}
                 onPointerOut={(e) => {
