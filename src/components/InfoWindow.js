@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import "../css/infoWindowStyles.css";
+
 import { connect } from "react-redux";
 import { setClickedFloor, setClickedRoom } from "../actions";
 

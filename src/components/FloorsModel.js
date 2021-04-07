@@ -79,10 +79,10 @@ const FloorsModel = ({ windowWidth, clickedFloor, clickedRoom, onClickedFloorCha
     }
   };
 
-  const clickedOnRoom = (index, event) => {
-    if (clickedFloor !== null) {
+  const clickedOnRoom = (floorIndex, roomIndex, event) => {
+    if (clickedFloor !== null && floorIndex === clickedFloor) {
       event.stopPropagation();
-      onClickedRoomChange(index);
+      onClickedRoomChange(roomIndex);
     }
   };
 
@@ -154,7 +154,7 @@ const FloorsModel = ({ windowWidth, clickedFloor, clickedRoom, onClickedFloorCha
                   hoveredOnRoom(floorIndex, roomIndex, false, e);
                 }}
                 onClick={(e) => {
-                  clickedOnRoom(roomIndex, e);
+                  clickedOnRoom(floorIndex, roomIndex, e);
                 }}
               >
                 <meshStandardMaterial
